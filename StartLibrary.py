@@ -2,62 +2,66 @@
 from resources.Library import Library
 from resources.UI import UI
 from resources.Book import Book
+from resources.SafeInput import SafeInput
 import sys 
 
-menuOption= "main"
+#----------Main Script---------------
+# Handles overall Library Probam state based on User Input
+
+### Program Variables ###
+menu_option= "main"
+file=  sys.argv[1]
 user_input= str()
 exit= 1
 
-UI_Instance=UI()
-file=  sys.argv[1]
-LoadedLibrary= Library(file)
-NewBook= Book()
+### Initialization of functional classes ###
+library_menu=UI()
+my_library= Library(file)
+new_book= Book()
+s_i=SafeInput()
 
+input("                <- Press Enter to Continue ->")
 while (exit):
-    match menuOption:
+    match menu_option:
         case "main":
-            UI_Instance.Options_Menu()
-            user_input= input()
-            menuOption= user_input
+            library_menu.options_menu()
+            user_input , menu_option= s_i.safe_input("main")
         case "1":
-            UI_Instance.New_Book_Parameters("Title")
-            menuOption= "Author"
-            user_input= input()
-            NewBook.set_book_title(user_input)
+            library_menu.new_book_parameters("Title")
+            user_input , menu_option= s_i.safe_input("1")
+            new_book.set_book_title(user_input)
         case "Author":
-            UI_Instance.New_Book_Parameters("Author")
-            menuOption= "ISBN"
-            user_input= input()
-            NewBook.set_book_author(user_input)
+            library_menu.new_book_parameters("Author")
+            user_input , menu_option= s_i.safe_input("Author")
+            new_book.set_book_author(user_input)
         case "ISBN":
-            UI_Instance.New_Book_Parameters("ISBN")
-            menuOption= "Year"
-            user_input= input()
-            NewBook.set_book_isbn(user_input)
+            library_menu.new_book_parameters("ISBN")
+            user_input , menu_option= s_i.safe_input("ISBN")
+            new_book.set_book_isbn(user_input)
         case "Year":
-            UI_Instance.New_Book_Parameters("Publication Year")
-            menuOption= "Upgrade"
-            user_input= input()
-            NewBook.set_book_pyear(user_input)
-            LoadedLibrary.registerBook(NewBook)
+            library_menu.new_book_parameters("Publication Year")
+            user_input , menu_option= s_i.safe_input("Year")
+            new_book.set_book_pyear(user_input)                
         case "Upgrade":
-            UI_Instance.Upgrade_Library(LoadedLibrary.getOrderedBookEntries())
-            user_input= input("Are you sure you want to upgrade the library? (Y/n):  ")
+            found=my_library.is_book_in_database(new_book)
+            my_library.register_book(new_book)
+            library_menu.upgrade_library(my_library.get_registered_book_entries("ui"), found)
+            user_input , menu_option= s_i.safe_input("Upgrade")
             if (user_input == "Y" or user_input == "y"):
-                LoadedLibrary.addBookToDatabase(NewBook)
+                my_library.add_book_to_database(new_book)
             else:
-                LoadedLibrary.unregisterBook(NewBook)
-            menuOption="main"
+                my_library.unregister_book(new_book)
+            my_library= Library(file) # Refreshing information in the registry with file info.
+            menu_option="main"
         case "2":
-            UI_Instance.Print_Library(LoadedLibrary.getOrderedBookEntries())
-            input("\n Press Any Key to continue")
-            menuOption="main"
+            library_menu.print_library(my_library.get_registered_book_entries("ui"))
+            menu_option="main"
         case "q":
-            UI_Instance.Farewell_Menu()
-            menuOption="q"
+            library_menu.farewell_menu()
             exit=0
         case "Q":
-            UI_Instance.Farewell_Menu()
-            menuOption="Q"
+            library_menu.farewell_menu()
             exit=0
+    
+
     
